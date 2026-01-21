@@ -1,0 +1,70 @@
+# Sustainable Resource Management using Reinforcement Learning (Q-Learning)
+
+import numpy as np
+import random
+
+# -----------------------------
+# 1. Environment Definition
+# -----------------------------
+states = ["Low", "Medium", "High"]        # Resource levels
+actions = ["Conserve", "Normal Use", "Overuse"]
+
+num_states = len(states)
+num_actions = len(actions)
+
+def step(state, action):
+    """
+    Simulate resource dynamics and return next state and reward
+    """
+    if action == 0:  # Conserve
+        reward = 5
+        next_state = min(state + 1, num_states - 1)
+    elif action == 1:  # Normal Use
+        reward = 3
+        next_state = state
+    else:  # Overuse
+        reward = -5
+        next_state = max(state - 1, 0)
+
+    return next_state, reward
+
+# -----------------------------
+# 2. Initialize Q-Table
+# -----------------------------
+Q = np.zeros((num_states, num_actions))
+
+alpha = 0.1      # learning rate
+gamma = 0.9      # discount factor
+epsilon = 1.0    # exploration rate
+
+# -----------------------------
+# 3. Q-Learning Training
+# -----------------------------
+episodes = 500
+
+for _ in range(episodes):
+    state = random.randint(0, num_states - 1)
+
+    for _ in range(10):
+        if random.random() < epsilon:
+            action = random.randint(0, num_actions - 1)
+        else:
+            action = np.argmax(Q[state])
+
+        next_state, reward = step(state, action)
+
+        Q[state, action] += alpha * (
+            reward + gamma * np.max(Q[next_state]) - Q[state, action]
+        )
+
+        state = next_state
+
+    epsilon = max(0.1, epsilon * 0.99)
+
+# -----------------------------
+# 4. Output Results
+# -----------------------------
+print("Training completed.\n")
+print("Learned Q-Table:")
+for i, state in enumerate(states):
+    print(state, ":", Q[i])
